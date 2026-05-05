@@ -70,18 +70,18 @@ class ReportController extends Controller
     public function summary(Request $request)
     {
         $request->validate([
-            'date_from' => 'required|date',
-            'date_to'   => 'required|date|after_or_equal:date_from',
+            'start_date' => 'required|date',
+            'end_date'   => 'required|date|after_or_equal:start_date',
         ]);
 
         $borrows = Borrow::with(['user', 'item'])
-            ->whereBetween('borrow_date', [$request->date_from, $request->date_to])
+            ->whereBetween('borrow_date', [$request->start_date, $request->end_date])
             ->get();
 
         return response()->json([
             'period' => [
-                'from' => $request->date_from,
-                'to'   => $request->date_to,
+                'from' => $request->start_date,
+                'to'   => $request->end_date,
             ],
             'total'    => $borrows->count(),
             'waiting'  => $borrows->where('status', 'waiting')->count(),

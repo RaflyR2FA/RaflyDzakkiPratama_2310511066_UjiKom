@@ -25,15 +25,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4">
             <Archive size={32} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Inventaris Kantor</h1>
-          <p className="text-gray-500 text-sm mt-1">Masuk untuk melanjutkan</p>
+          <div className="text-2xl font-bold text-gray-900">Inventaris Kantor</div>
+          <div className="text-gray-500 text-sm mt-1">Masuk untuk melanjutkan</div>
         </div>
 
         {error && (
@@ -82,8 +82,8 @@ export default function Login() {
           <div className="grid grid-cols-3 gap-2 text-xs">
             {[
               { role: 'Admin', email: 'admin@inventaris.com' },
-              { role: 'Petugas', email: 'petugas@inventaris.com' },
-              { role: 'Staf', email: 'staf@inventaris.com' },
+              { role: 'Petugas', email: 'moderator@inventaris.com' },
+              { role: 'Staf', email: 'staff@inventaris.com' },
             ].map(acc => (
               <button
                 key={acc.role}

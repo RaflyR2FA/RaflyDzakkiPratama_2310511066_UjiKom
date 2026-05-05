@@ -6,10 +6,10 @@ import {
 } from 'lucide-react';
 
 const navItems = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', hideFromStaff: true },
   { path: '/items', icon: Package, label: 'Inventaris Barang' },
   { path: '/borrows', icon: ClipboardList, label: 'Peminjaman' },
-  { path: '/reports', icon: BarChart3, label: 'Laporan', adminOnly: false },
+  { path: '/reports', icon: BarChart3, label: 'Laporan', hideFromStaff: true },
 ];
 
 export default function Sidebar({ open, onClose }) {
@@ -46,23 +46,25 @@ export default function Sidebar({ open, onClose }) {
 
         {/* Navigation */}
         <nav className="p-4 space-y-1">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`
-              }
-            >
-              <item.icon size={18} />
-              {item.label}
-            </NavLink>
-          ))}
+          {navItems
+            .filter((item) => !(item.hideFromStaff && user?.role === 'staff'))
+            .map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }`
+                }
+              >
+                <item.icon size={18} />
+                {item.label}
+              </NavLink>
+            ))}
         </nav>
 
         {/* User Info Bottom */}

@@ -4,7 +4,7 @@ import api from '../../api/axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 
-const Field = ({ name, label, type = 'text', required, value, onChange, error, children }) => (
+const Field = ({ name, label, type = 'text', required, value, onChange, error, children, accept }) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-1">
       {label} {required && <span className="text-red-500">*</span>}
@@ -13,12 +13,13 @@ const Field = ({ name, label, type = 'text', required, value, onChange, error, c
       <input 
         type={type} 
         name={name} 
-        value={value} 
+        value={type !== 'file' ? (value || '') : undefined} 
         onChange={onChange} 
         required={required}
+        accept={accept}
         className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none ${
           error ? 'border-red-400' : 'border-gray-300'
-        }`} 
+        } ${type === 'file' ? 'file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100' : ''}`} 
       />
     )}
     {error && <p className="text-red-500 text-xs mt-1">{error[0]}</p>}
@@ -40,6 +41,7 @@ export default function ItemForm() {
     location: '',
     purchase_price: '', 
     purchase_date: '',
+    photo: null,
   });
   
   const [loading, setLoading] = useState(false);
@@ -65,34 +67,60 @@ export default function ItemForm() {
             location: item.location || '',
             purchase_price: item.purchase_price || '',
             purchase_date: item.purchase_date || '',
+            photo: null,
           });
         })
         .finally(() => setFetchLoading(false));
     }
-    // FIX 3: Tambahkan dependensi yang hilang ke dalam array
   }, [id, canManageItems, isEdit, navigate]); 
 
   const handleChange = (e) => {
-    setForm(p => ({ ...p, [e.target.name]: e.target.value }));
-    setErrors(p => ({ ...p, [e.target.name]: null }));
+    const { name, type, files, value } = e.target;
+    
+    // Penanganan khusus untuk input file
+    if (type === 'file') {
+      setForm(p => ({ ...p, [name]: files[0] || null }));
+    } else {
+      setForm(p => ({ ...p, [name]: value }));
+    }
+    
+    setErrors(p => ({ ...p, [name]: null }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrors({});
+    
     try {
+      const submitData = new FormData();
+      
+      Object.keys(form).forEach(key => {
+        // Jangan masukkan photo jika kosong/bukan file baru
+        if (key === 'photo' && !(form[key] instanceof File)) return;
+        
+        // Masukkan data ke FormData
+        if (form[key] !== null && form[key] !== undefined) {
+          submitData.append(key, form[key]);
+        }
+      });
+
       if (isEdit) {
-        await api.put(`/items/${id}`, form);
+        submitData.append('_method', 'PUT');
+        await api.post(`/items/${id}`, submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       } else {
-        await api.post('/items', form);
+        await api.post('/items', submitData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
       }
       navigate('/items');
     } catch (err) {
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
-        alert(err.response?.data?.message || 'An error occurred');
+        alert(err.response?.data?.message || 'Terjadi kesalahan saat menyimpan data');
       }
     } finally {
       setLoading(false);
@@ -108,14 +136,13 @@ export default function ItemForm() {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{isEdit ? 'Edit Item' : 'Add Item'}</h2>
-          <p className="text-gray-500 text-sm">{isEdit ? 'Update item details' : 'Register a new item'}</p>
+          <div className="text-2xl font-bold text-gray-900">{isEdit ? 'Edit Item' : 'Add Item'}</div>
+          <div className="text-gray-500 text-sm">{isEdit ? 'Update item details' : 'Register a new item'}</div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {/* Tambahkan props value, onChange, dan error ke setiap Field */}
           <Field name="item_name" label="Item Name" required value={form.item_name} onChange={handleChange} error={errors.item_name} />
           
           <Field name="category" label="Category" required error={errors.category}>
@@ -144,6 +171,7 @@ export default function ItemForm() {
           <Field name="location" label="Location" value={form.location} onChange={handleChange} error={errors.location} />
           <Field name="purchase_price" label="Purchase Price" type="number" value={form.purchase_price} onChange={handleChange} error={errors.purchase_price} />
           <Field name="purchase_date" label="Purchase Date" type="date" value={form.purchase_date} onChange={handleChange} error={errors.purchase_date} />
+          <Field name="photo" label="Photo (Optional)" type="file" accept="image/*" onChange={handleChange} error={errors.photo} />
         </div>
         
         <Field name="description" label="Description" error={errors.description}>

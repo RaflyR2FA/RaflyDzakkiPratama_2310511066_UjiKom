@@ -27,7 +27,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/items/{item:item_code}',    [ItemController::class, 'update']);
         Route::delete('/items/{item:item_code}', [ItemController::class, 'destroy']);
 
-        Route::post('/borrows/{borrow:borrow_code}/approve', [BorrowController::class, 'accept']);
+        Route::post('/borrows/{borrow:borrow_code}/accept', [BorrowController::class, 'accept']);
         Route::post('/borrows/{borrow:borrow_code}/reject', [BorrowController::class, 'reject']);
         Route::post('/borrows/{borrow:borrow_code}/return', [BorrowController::class, 'returnItem']);
 

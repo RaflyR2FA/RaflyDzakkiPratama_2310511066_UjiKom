@@ -36,11 +36,11 @@ export default function ItemList() {
     return () => clearTimeout(timer);
   }, [fetchData]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (item_code) => {
     if (!window.confirm('Are you sure you want to delete this item?')) return;
-    setDeleting(id);
+    setDeleting(item_code);
     try {
-      await api.delete(`/items/${id}`);
+      await api.delete(`/items/${item_code}`);
       fetchData();
     } catch (e) {
       alert(e.response?.data?.message || 'Failed to delete item');
@@ -53,8 +53,8 @@ export default function ItemList() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Item Inventory</h2>
-          <p className="text-gray-500 text-sm">List of all office equipment</p>
+          <div className="text-2xl font-bold text-gray-900">Item Inventory</div>
+          <div className="text-gray-500 text-sm">List of all office equipment</div>
         </div>
         {canManageItems() && (
           <Link to="/items/add"
@@ -67,7 +67,7 @@ export default function ItemList() {
       {/* Filter */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
         <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-50">
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -113,7 +113,6 @@ export default function ItemList() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {items.map(item => {
-                  // Penentuan badge status
                   const status = item.available_quantity === 0 ? 'out_of_stock' : item.condition;
                   
                   return (
@@ -134,19 +133,19 @@ export default function ItemList() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Link to={`/items/${item.id}`}
+                          <Link to={`/items/${item.item_code}`}
                             className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                             <Eye size={16} />
                           </Link>
                           {canManageItems() && (
                             <>
-                              <Link to={`/items/${item.id}/edit`}
+                              <Link to={`/items/${item.item_code}/edit`}
                                 className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
                                 <Edit size={16} />
                               </Link>
                               <button
-                                onClick={() => handleDelete(item.id)}
-                                disabled={deleting === item.id}
+                                onClick={() => handleDelete(item.item_code)}
+                                disabled={deleting === item.item_code}
                                 className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50">
                                 <Trash2 size={16} />
                               </button>

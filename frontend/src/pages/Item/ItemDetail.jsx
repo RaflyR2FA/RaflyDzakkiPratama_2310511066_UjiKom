@@ -4,7 +4,7 @@ import api from '../../api/axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   ArrowLeft, Edit, Trash2, MapPin, Package, 
-  CalendarDays, ReceiptText, Clock3, History 
+  CalendarDays, ReceiptText, Clock3, History, Image as ImageIcon 
 } from 'lucide-react';
 
 const formatPrice = (price) => {
@@ -23,8 +23,8 @@ const conditionBadge = {
 };
 
 const borrowStatusConfig = {
-  pending: { label: 'Pending', class: 'bg-yellow-100 text-yellow-700' },
-  approved: { label: 'Approved', class: 'bg-blue-100 text-blue-700' },
+  waiting: { label: 'Waiting', class: 'bg-yellow-100 text-yellow-700' },
+  accepted: { label: 'Accepted', class: 'bg-blue-100 text-blue-700' },
   borrowed: { label: 'Borrowed', class: 'bg-purple-100 text-purple-700' },
   returned: { label: 'Returned', class: 'bg-green-100 text-green-700' },
   rejected: { label: 'Rejected', class: 'bg-red-100 text-red-700' },
@@ -56,7 +56,7 @@ export default function ItemDetail() {
   }, [id, navigate]);
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this item permanentlly?')) return;
+    if (!window.confirm('Are you sure you want to delete this item permanently?')) return;
     setDeleting(true);
     try {
       await api.delete(`/items/${id}`);
@@ -73,21 +73,20 @@ export default function ItemDetail() {
 
   return (
     <div className="space-y-6">
-      {/* Header & Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate('/items')} className="text-gray-400 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100">
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">{item.item_name}</h2>
-            <p className="text-sm text-gray-500">Code: {item.item_code} • Added by: {item.created_by?.name || 'System'}</p>
+            <div className="text-2xl font-bold text-gray-900">{item.item_name}</div>
+            <div className="text-sm text-gray-500">Code: {item.item_code} • Added by: {item.created_by?.name || 'System'}</div>
           </div>
         </div>
         
         {canManageItems() && (
           <div className="flex items-center gap-2">
-            <Link to={`/items/${item.id}/edit`}
+            <Link to={`/items/${item.item_code}/edit`}
               className="flex items-center gap-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
               <Edit size={16} /> Edit
             </Link>
@@ -109,6 +108,23 @@ export default function ItemDetail() {
               <Package size={18} className="text-blue-500" /> General Information
             </h3>
             
+            {/* TAMPILAN FOTO (Ditambahkan) */}
+            <div className="mb-6">
+              {item.photo ? (
+                <img 
+                  // Asumsi URL storage default Laravel
+                  src={`http://localhost:8000/storage/${item.photo}`} 
+                  alt={item.item_name} 
+                  className="w-full max-h-80 object-cover rounded-lg border border-gray-200"
+                />
+              ) : (
+                <div className="w-full h-40 bg-gray-50 rounded-lg border border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400">
+                  <ImageIcon size={32} className="mb-2 opacity-50" />
+                  <span className="text-sm">No photo available</span>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-x-6 gap-y-5 text-sm">
               <div>
                 <p className="text-gray-500">Category</p>
@@ -154,19 +170,20 @@ export default function ItemDetail() {
                 item.borrows.slice(0, 5).map(borrow => (
                   <div key={borrow.id} className="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100 text-sm">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0">
                         {borrow.user?.name?.charAt(0).toUpperCase()}
                       </div>
                       <div>
                         <p className="font-medium text-gray-800">{borrow.user?.name}</p>
                         <p className="text-xs text-gray-500 flex items-center gap-1">
-                          <Clock3 size={12} /> {formatDate(borrow.borrow_date)} → {formatDate(borrow.planned_return_date)}
+                          {/* SESUAIKAN DENGAN BACKEND: Ubah ke return_date_plan */}
+                          <Clock3 size={12} /> {formatDate(borrow.borrow_date)} → {formatDate(borrow.return_date_plan)}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-medium text-gray-800">{borrow.quantity} unit(s)</p>
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium capitalize ${borrowStatusConfig[borrow.status]?.class}`}>
+                      <span className={`inline-block px-2 py-0.5 mt-0.5 rounded-full text-xs font-medium capitalize ${borrowStatusConfig[borrow.status]?.class || 'bg-gray-100 text-gray-700'}`}>
                         {borrowStatusConfig[borrow.status]?.label || borrow.status}
                       </span>
                     </div>

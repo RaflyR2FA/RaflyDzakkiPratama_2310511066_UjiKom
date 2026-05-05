@@ -22,7 +22,7 @@ function HomeRedirect() {
   return canApprove() ? <Navigate to="/dashboard" replace /> : <Navigate to="/items" replace />;
 }
 
-function DashboardGuard({ children }) {
+function StaffGuard({ children }) {
   const { canApprove } = useAuth();
   return canApprove() ? children : <Navigate to="/items" replace />;
 }
@@ -40,9 +40,9 @@ export default function App() {
             
             {/* Bungkus Dashboard dengan DashboardGuard */}
             <Route path="dashboard" element={
-              <DashboardGuard>
+              <StaffGuard>
                 <Dashboard />
-              </DashboardGuard>
+              </StaffGuard>
             } />
             
             {/* Items Routes */}
@@ -56,7 +56,11 @@ export default function App() {
             <Route path="borrows/request" element={<BorrowForm />} />
             
             {/* Reports Route */}
-            <Route path="reports" element={<ReportPage />} />
+            <Route path="reports" element={
+              <StaffGuard>
+                <ReportPage />
+              </StaffGuard>
+            } />
           </Route>
         </Routes>
       </BrowserRouter>

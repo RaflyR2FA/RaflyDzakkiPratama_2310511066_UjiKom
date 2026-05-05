@@ -6,10 +6,10 @@ import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 export default function BorrowForm() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    item_id: '', 
+    item_code: '',
     quantity: 1,
     borrow_date: new Date().toISOString().split('T')[0],
-    planned_return_date: '', 
+    return_date_plan: '',
     purpose: '',
   });
   
@@ -22,7 +22,7 @@ export default function BorrowForm() {
       .then(res => setItems(res.data.data.filter(b => b.available_quantity > 0)));
   }, []);
 
-  const selectedItem = items.find(b => b.id == form.item_id) || null;
+  const selectedItem = items.find(b => b.item_code === form.item_code) || null;
 
   const handleChange = (e) => {
     setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -50,8 +50,8 @@ export default function BorrowForm() {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Request Borrow</h2>
-          <p className="text-gray-500 text-sm">Fill out the equipment borrow request form</p>
+          <div className="text-2xl font-bold text-gray-900">Request Borrow</div>
+          <div className="text-gray-500 text-sm">Fill out the equipment borrow request form</div>
         </div>
       </div>
 
@@ -59,22 +59,22 @@ export default function BorrowForm() {
         {/* Pilih Barang */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Item <span className="text-red-500">*</span></label>
-          <select name="item_id" value={form.item_id} onChange={handleChange} required
-            className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none ${errors.item_id ? 'border-red-400' : 'border-gray-300'}`}>
+          <select name="item_code" value={form.item_code} onChange={handleChange} required
+            className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none ${errors.item_code ? 'border-red-400' : 'border-gray-300'}`}>
             <option value="">-- Select an Item --</option>
             {items.map(b => (
-              <option key={b.id} value={b.id}>
+              <option key={b.id} value={b.item_code}>
                 {b.item_name} ({b.category}) - Available: {b.available_quantity}
               </option>
             ))}
           </select>
-          {errors.item_id && <p className="text-red-500 text-xs mt-1">{errors.item_id[0]}</p>}
+          {errors.item_code && <p className="text-red-500 text-xs mt-1">{errors.item_code[0]}</p>}
         </div>
 
         {/* Info barang terpilih */}
         {selectedItem && (
           <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm">
-            <p className="font-medium text-blue-800">{selectedItem.item_name}</p>
+            <p className="font-medium text-blue-800">{selectedItem.item_name} ({selectedItem.item_code})</p>
             <p className="text-blue-600">Stock available: {selectedItem.available_quantity} unit(s) • Location: {selectedItem.location || '-'}</p>
           </div>
         )}
@@ -96,9 +96,10 @@ export default function BorrowForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Planned Return <span className="text-red-500">*</span></label>
-            <input type="date" name="planned_return_date" value={form.planned_return_date} onChange={handleChange} required
+            <input type="date" name="return_date_plan" value={form.return_date_plan} onChange={handleChange} required
               min={form.borrow_date}
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+              className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none ${errors.return_date_plan ? 'border-red-400' : 'border-gray-300'}`} />
+            {errors.return_date_plan && <p className="text-red-500 text-xs mt-1">{errors.return_date_plan[0]}</p>}
           </div>
         </div>
 
